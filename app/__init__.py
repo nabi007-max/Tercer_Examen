@@ -19,6 +19,8 @@ def create_app():
     from .models import User
     from .admin import configuracion_admin
     from .auth import auth_bp
+    from .ai_chat import chat_bp
     configuracion_admin()
     app.register_blueprint(auth_bp)
+    app.register_blueprint(chat_bp)
     return app

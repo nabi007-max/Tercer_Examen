@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat con Farma Asistente</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='auth_modern.css') }}">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+        }
+        .auth-shell {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .chat-container {
+            width: 400px;
+            height: 600px;
+            background-color: #fff;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+        }
+        .chat-header {
+            padding: 15px;
+            background-color: #2d6cdf;
+            color: white;
+            border-top-left-radius: 10px;
+            border-top-right-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .chat-box {
+            flex-grow: 1;
+            padding: 15px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .message {
+            padding: 10px 15px;
+            border-radius: 18px;
+            max-width: 75%;
+            word-wrap: break-word;
+            color: #000;
+        }
+        .user-message {
+            background-color: #e0e0e0;
+            align-self: flex-end;
+        }
+        .bot-message {
+            background-color: #f1f1f1;
+            align-self: flex-start;
+        }
+        .chat-input {
+            display: flex;
+            padding: 15px;
+            border-top: 1px solid #ddd;
+        }
+        #userInput {
+            flex-grow: 1;
+            border: 1px solid #ccc;
+            border-radius: 20px;
+            padding: 10px 15px;
+            margin-right: 10px;
+        }
+        #sendButton {
+            border: none;
+            background-color: #2d6cdf;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+        }
+        #sendButton:hover {
+            background-color: #255ab2;
+        }
+        .chat-header h3 {
+            margin: 0;
+        }
+        .btn-back {
+            text-decoration: none;
+            color: white;
+            background-color: rgba(255, 255, 255, 0.2);
+            padding: 8px 12px;
+            border-radius: 15px;
+            font-size: 0.85em;
+            transition: background-color 0.2s;
+        }
+        .btn-back:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+        }
+    </style>
+</head>
+<body>
+
+<main class="auth-shell">
+<div class="chat-container">
+    <div class="chat-header">
+        <h3>Asistente Farma</h3>
+        <a href="/admin" class="btn-back">Volver al Panel</a>
+    </div>
+    <div class="chat-box" id="chatBox">
+        <div class="message bot-message">
+            ¡Hola! Soy el asistente de Farma. ¿En qué puedo ayudarte hoy?
+        </div>
+    </div>
+    <div class="chat-input">
+        <input type="text" id="userInput" placeholder="Escribe tu pregunta...">
+        <button id="sendButton">Enviar</button>
+    </div>
+</div>
+</main>
+
+<script>
+    const chatBox = document.getElementById('chatBox');
+    const userInput = document.getElementById('userInput');
+    const sendButton = document.getElementById('sendButton');
+
+    sendButton.addEventListener('click', sendMessage);
+    userInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            sendMessage();
+        }
+    });
+
+    function addMessage(text, sender) {
+        const messageElement = document.createElement('div');
+        messageElement.classList.add('message', sender === 'user' ? 'user-message' : 'bot-message');
+        messageElement.textContent = text;
+        chatBox.appendChild(messageElement);
+        chatBox.scrollTop = chatBox.scrollHeight; // Auto-scroll to bottom
+    }
+
+    async function sendMessage() {
+        const question = userInput.value.trim();
+        if (question === '') return;
+
+        addMessage(question, 'user');
+        userInput.value = '';
+
+        try {
+            const response = await fetch('/chat/preguntar', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ pregunta: question })
+            });
+
+            if (!response.ok) {
+                throw new Error('Error en la respuesta del servidor.');
+            }
+
+            const data = await response.json();
+            addMessage(data.respuesta, 'bot');
+
+        } catch (error) {
+            console.error('Error al contactar al chatbot:', error);
+            addMessage('Lo siento, no puedo responder en este momento.', 'bot');
+        }
+    }
+</script>
+
+</body>
+</html>
