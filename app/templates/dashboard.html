@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Inteligente</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.3.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+    <main class="dashboard-shell">
+        <header class="dashboard-header card">
+            <div>
+                <p class="eyebrow">Repostería Dalas</p>
+                <h1>Panel de inteligencia comercial</h1>
+                <p class="muted">
+                    Datos actualizados que combinan stock, ventas recientes y perspectivas predictivas con apoyo de IA.
+                </p>
+            </div>
+            <div class="header-meta">
+                <span>Última actualización</span>
+                <strong>{{ last_update }}</strong>
+            </div>
+        </header>
+
+        <section class="metrics-grid">
+            <article class="metric-card card">
+                <p>Total de productos</p>
+                <strong>{{ total_productos }}</strong>
+                <span class="muted">Disponible para venta</span>
+            </article>
+            <article class="metric-card card">
+                <p>Valor del inventario</p>
+                <strong>${{ valor_stock }}</strong>
+                <span class="muted">Estimación en moneda local</span>
+            </article>
+            <article class="metric-card card">
+                <p>Ventas 30 días</p>
+                <strong>{{ ventas_30dias }}</strong>
+                <span class="muted">Cantidad de unidades vendidas recientemente</span>
+            </article>
+        </section>
+
+        <section class="chart-card card">
+            <header class="section-title">
+                <div>
+                    <h2>Stock por producto</h2>
+                    <p class="muted">La altura de cada barra refleja el stock disponible.</p>
+                </div>
+                <span class="pill">Datos dinámicos</span>
+            </header>
+            <div class="chart-wrapper">
+                <canvas id="stockChart"></canvas>
+            </div>
+        </section>
+
+        <section class="ai-panel card">
+            <div class="section-title">
+                <div>
+                    <h3>Análisis inteligente</h3>
+                    <p class="muted">Haz clic para que la IA analice lo que sucede en inventario y ventas.</p>
+                </div>
+                <button id="analyzeBtn" class="btn-primary">Generar insights</button>
+            </div>
+            <div class="ai-grid">
+                <article>
+                    <h4>Análisis automático</h4>
+                    <p id="analysisText">Aquí aparecerá la explicación sobre ventas, inventario y tendencias.</p>
+                </article>
+                <article>
+                    <h4>Resumen clave</h4>
+                    <p id="summaryText">La IA resumirá en una frase lo más relevante de los datos actuales.</p>
+                </article>
+                <article>
+                    <h4>Predicción inteligente</h4>
+                    <p id="predictionText">Se describirá qué producto va a requerir atención pronto.</p>
+                </article>
+            </div>
+        </section>
+
+        <section class="list-panel">
+            <article class="card">
+                <div class="section-title">
+                    <h4>Top productos más vendidos</h4>
+                    <span class="muted">Basado en ventas acumuladas</span>
+                </div>
+                <ul>
+                    {% for producto in top_products %}
+                        <li>
+                            <div>
+                                <strong>{{ producto.nombre }}</strong>
+                                <span class="muted">{{ producto.ventas_totales }} unidades vendidas</span>
+                            </div>
+                            <span class="highlight">${{ producto.ingresos_totales | round(2) }}</span>
+                        </li>
+                    {% else %}
+                        <li class="empty-state">Registra ventas para ver el ranking.</li>
+                    {% endfor %}
+                </ul>
+            </article>
+            <article class="card">
+                <div class="section-title">
+                    <h4>Productos con stock bajo</h4>
+                    <span class="muted">Señalamientos directos de la IA</span>
+                </div>
+                <ul>
+                    {% for producto in low_stock_products %}
+                        <li>
+                            <div>
+                                <strong>{{ producto.nombre }}</strong>
+                                <span class="muted">{{ producto.stock }} unidades restantes</span>
+                            </div>
+                            {% if producto.dias_estimados %}
+                                <span class="warning">{{ producto.dias_estimados }}d aprox.</span>
+                            {% else %}
+                                <span class="warning">Análisis pendiente</span>
+                            {% endif %}
+                        </li>
+                    {% else %}
+                        <li class="empty-state">Todos los productos tienen stock saludable.</li>
+                    {% endfor %}
+                </ul>
+            </article>
+        </section>
+    </main>
+
+    <script>
+        const nombres = {{ nombres | tojson }};
+        const stock = {{ stock | tojson }};
+
+        const ctx = document.getElementById("stockChart").getContext("2d");
+        const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+        gradient.addColorStop(0, "rgba(217, 83, 79, 0.9)");
+        gradient.addColorStop(1, "rgba(248, 197, 201, 0.5)");
+
+        new Chart(ctx, {
+            type: "bar",
+            data: {
+                labels: nombres,
+                datasets: [
+                    {
+                        label: "Stock disponible",
+                        data: stock,
+                        borderRadius: 12,
+                        backgroundColor: gradient,
+                        maxBarThickness: 40,
+                    },
+                ],
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            color: "#6c5dd3",
+                        },
+                        grid: {
+                            color: "rgba(108, 93, 211, 0.2)",
+                        },
+                    },
+                    x: {
+                        ticks: {
+                            color: "#4b4274",
+                        },
+                        grid: {
+                            display: false,
+                        },
+                    },
+                },
+                plugins: {
+                    tooltip: {
+                        enabled: true,
+                        callbacks: {
+                            label: (ctx) => {
+                                return `Stock: ${ctx.parsed.y} u.`;
+                            },
+                        },
+                    },
+                    legend: {
+                        display: false,
+                    },
+                },
+            },
+        });
+
+        const analyzeBtn = document.getElementById("analyzeBtn");
+        const analysisText = document.getElementById("analysisText");
+        const summaryText = document.getElementById("summaryText");
+        const predictionText = document.getElementById("predictionText");
+
+        const updateText = (element, value, fallback) => {
+            element.textContent = value || fallback;
+        };
+
+        analyzeBtn.addEventListener("click", () => {
+            analyzeBtn.disabled = true;
+            analyzeBtn.textContent = "Generando...";
+
+            fetch("/analisis-ia")
+                .then((response) => response.json())
+                .then((data) => {
+                    updateText(
+                        analysisText,
+                        data.analisis,
+                        "No se pudo elaborar el análisis en este momento."
+                    );
+                    updateText(
+                        summaryText,
+                        data.resumen,
+                        "No fue posible generar el resumen."
+                    );
+                    updateText(
+                        predictionText,
+                        data.prediccion,
+                        "Sin predicción disponible."
+                    );
+                })
+                .catch(() => {
+                    updateText(
+                        analysisText,
+                        null,
+                        "Error conectando con la IA."
+                    );
+                    updateText(summaryText, null, "Error conectando con la IA.");
+                    updateText(predictionText, null, "Error conectando con la IA.");
+                })
+                .finally(() => {
+                    analyzeBtn.disabled = false;
+                    analyzeBtn.textContent = "Generar insights";
+                });
+        });
+    </script>
+</body>
+</html>
