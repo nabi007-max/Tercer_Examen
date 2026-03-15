@@ -193,4 +193,5 @@ def configuracion_admin():
     admin.add_view(VentaAdminView(Venta, db.session))
     admin.add_view(DetalleVentaAdminView(DetalleVenta, db.session))
 
+    admin.add_link(MenuLink(name="Dashboard IA", url="/dashboard"))
     admin.add_link(MenuLink(name="Cerrar sesión", url="/logout"))

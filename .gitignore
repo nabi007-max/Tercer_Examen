@@ -1,0 +1,69 @@
+# =========================
+# Python
+# =========================
+__pycache__/
+*.py[cod]
+*$py.class
+
+# =========================
+# Entornos virtuales
+# =========================
+venv/
+env/
+.venv/
+ENV/
+
+# =========================
+# Variables de entorno
+# =========================
+.env
+.env.*
+instance/
+
+# =========================
+# Archivos de Flask
+# =========================
+*.db
+*.sqlite3
+
+# =========================
+# Archivos temporales
+# =========================
+*.log
+*.tmp
+*.cache
+
+# =========================
+# Archivos de compilación
+# =========================
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# =========================
+# Archivos de editores
+# =========================
+.vscode/
+.idea/
+
+# =========================
+# Sistema operativo
+# =========================
+.DS_Store
+Thumbs.db
+
+# =========================
+# Archivos de testing
+# =========================
+.coverage
+htmlcov/
+.pytest_cache/
+
+# =========================
+# Archivos binarios
+# =========================
+*.exe
+*.dll
+*.so
+*.out
