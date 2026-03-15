@@ -5,7 +5,7 @@ from .models import Producto
 chat_bp = Blueprint("chat", __name__)
 
 # Configuración del cliente para Groq
-api_key = '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'
+api_key = 'insertar_token_de_groq'
 client = OpenAI(api_key=api_key, base_url="https://api.groq.com/openai/v1")
 
 def preguntar_chatbot(preguntausuario):
